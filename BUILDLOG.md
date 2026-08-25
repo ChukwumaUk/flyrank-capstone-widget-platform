@@ -1,0 +1,1 @@
+Built with AI assistance (Claude) in a teacher-student format: each concept and line explained, then written and owned by me.
