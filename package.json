@@ -1,0 +1,35 @@
+{
+  "name": "flyrank-capstone-widget-platform",
+  "version": "1.0.0",
+  "description": "A platform for creating embeddable lead-capture widgets, delivering them via a one-line `<script>` snippet, and safely accepting submissions from the public internet — validated, rate-limited, spam-filtered, geo-enriched, and dashboarded.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChukwumaUk/flyrank-capstone-widget-platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ChukwumaUk/flyrank-capstone-widget-platform/issues"
+  },
+  "homepage": "https://github.com/ChukwumaUk/flyrank-capstone-widget-platform#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.3.0",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  }
+}
