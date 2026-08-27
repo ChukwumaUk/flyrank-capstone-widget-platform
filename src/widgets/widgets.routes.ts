@@ -12,7 +12,7 @@ widgetsRouter.post("/", async (req, res) => {
   }
 
   // 2. Identity comes from auth, NOT the body. (Placeholder until we add real auth.)
-  const owner_id = req.header("x-owner-id") ?? "00000000-0000-0000-0000-000000000000";
+  const owner_id = req.user!.id;
 
   // 3. Call the service with validated input + the owner from auth.
   const widget = await createWidget({ ...parsed.data, owner_id });
