@@ -1,1 +1,2 @@
 Built with AI assistance (Claude) in a teacher-student format: each concept and line explained, then written and owned by me.
+Hit a 500 because requireAuth was imported but not applied on the mount; fixed by adding it as middleware in app.use. Learned that req.user!.id trusts the middleware wiring, so a missing guard becomes a crash.
