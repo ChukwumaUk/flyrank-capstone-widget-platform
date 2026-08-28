@@ -60,3 +60,7 @@ explaining each concept and line. I wrote/reviewed all code, debugged the issues
 above myself with guidance, and can defend every decision. AI was most useful for
 TypeScript tooling config and explaining new concepts (declaration merging, CORS);
 least needed for the CRUD/SQL logic, which reused patterns I already knew."]
+
+## CORS
+
+Wired CORS on /submissions via the cors library; verified preflight (OPTIONS → 204 with Allow-Origin/Methods/Headers) and the real POST both carry the right headers. Currently permissive (origin: true) — to be tightened to per-widget allowed_origins.
