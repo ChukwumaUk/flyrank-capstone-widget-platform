@@ -118,8 +118,93 @@ _Not yet built — Phase 3._
 ## 🚧 Embeddable widget script (one-line snippet)
 _Not yet built — Phase 3._
 
-## 🚧 Hardened submission path — CORS + preflight
-_Not yet built — Phase 2 (next)._
+## ✅ Hardened submission path — CORS + preflight
+A cross-origin JSON POST triggers a preflight. The server answers `OPTIONS` with
+the CORS permission headers, and the real POST carries `Access-Control-Allow-Origin`
+so the browser will deliver the response.
+
+Preflight (what the browser sends automatically before the real request):
+
+$ curl -i -X OPTIONS http://localhost:3000/submissions
+-H "Origin: http://localhost:5500"
+-H "Access-Control-Request-Method: POST"
+-H "Access-Control-Request-Headers: Content-Type"
+
+HTTP/1.1 204 No Content
+Access-Control-Allow-Origin: http://localhost:5500
+Vary: Origin
+Access-Control-Allow-Methods: POST,OPTIONS
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Max-Age: 86400
+
+
+The real POST also carries the allow-origin header:
+
+$ curl -i -X POST http://localhost:3000/submissions
+-H "Origin: http://localhost:5500"
+-H "Content-Type: application/json"
+-d '{"widget_id":"81d68621-9cac-413c-870b-658251d98027","data":{"email":"visitor@example.com"}}'
+
+HTTP/1.1 201 Created
+Access-Control-Allow-Origin: http://localhost:5500
+Vary: Origin
+...
+
+
+## ✅ Submission endpoint — validation, size limit, existence check, persistence
+A well-formed submission for a real widget stores a row; malformed, oversized, or
+wrong-widget requests are rejected with the right code and store nothing.
+
+Valid submission → 201, and the row persists (note `country` is null — geo
+enrichment runs later; the submission stores anyway, "degrade never fail"):
+
+$ curl -i -X POST http://localhost:3000/submissions
+-H "Content-Type: application/json"
+-d '{"widget_id":"81d68621-9cac-413c-870b-658251d98027","data":{"email":"visitor@example.com","name":"Jane"}}'
+
+HTTP/1.1 201 Created
+{"id":"1","created_at":"2026-08-28T13:40:20.388Z"}
+
+
+Non-existent widget → 404 (existence check, not an ownership check):
+
+$ curl -i -X POST http://localhost:3000/submissions
+-H "Content-Type: application/json"
+-d '{"widget_id":"00000000-0000-0000-0000-000000000000","data":{"email":"x@y.com"}}'
+
+HTTP/1.1 404 Not Found
+{"error":"Widget not found"}
+
+
+Malformed widget_id (not a UUID) → 400, rejected before any DB lookup:
+
+$ curl -i -X POST http://localhost:3000/submissions
+-H "Content-Type: application/json"
+-d '{"widget_id":"not-a-uuid","data":{}}'
+
+HTTP/1.1 400 Bad Request
+{"error":"Invalid submission","details":[{"code":"invalid_format","format":"uuid","path":["widget_id"],"message":"Invalid UUID"}]}
+
+
+Missing `data` field → 400:
+
+$ curl -i -X POST http://localhost:3000/submissions
+-H "Content-Type: application/json"
+-d '{"widget_id":"81d68621-9cac-413c-870b-658251d98027"}'
+
+HTTP/1.1 400 Bad Request
+{"error":"Invalid submission","details":[{"code":"invalid_type","expected":"record","path":["data"],"message":"expected record, received undefined"}]}
+
+
+Persisted row (data stored as sent, country null pending enrichment):
+
+$ docker compose exec db psql -U postgres -d widgets -c
+"select id, widget_id, data, country from submissions;"
+
+id | widget_id | data | country
+----+--------------------------------------+--------------------------------------------------+---------
+1 | 81d68621-9cac-413c-870b-658251d98027 | {"name": "Jane", "email": "visitor@example.com"} |
+(1 row)
 
 ## 🚧 Rate limiting (429 under flood)
 _Not yet built._
