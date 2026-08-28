@@ -1,5 +1,6 @@
 import { findWidgetForSubmission, insertSubmission } from "./submissions.repository";
 import { enrichIp } from "./geo";
+import { notifyOwner } from "./notify";
 
 interface CreateSubmissionInput {
   widget_id: string;
@@ -32,6 +33,14 @@ export async function createSubmission(input: CreateSubmissionInput) {
     country: geo.country,    // real value, or null if enrichment degraded
     city: geo.city,
   });
+
+  // Side effect: notify the owner. This MUST NOT break the submission.
+  try {
+    await notifyOwner(widget.owner_id, submission.id);
+  } catch (err) {
+    console.error(`[notify] failed for submission ${submission.id}: ${(err as Error).message}`);
+    // Swallow it: the lead is already saved. Notification is best-effort.
+  }
 
   return { ok: true as const, spam: false as const, submission };
 }
