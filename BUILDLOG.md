@@ -64,3 +64,6 @@ least needed for the CRUD/SQL logic, which reused patterns I already knew."]
 ## CORS
 
 Wired CORS on /submissions via the cors library; verified preflight (OPTIONS → 204 with Allow-Origin/Methods/Headers) and the real POST both carry the right headers. Currently permissive (origin: true) — to be tightened to per-widget allowed_origins.
+
+## Honey-pot Spam Filtering
+Honeypot spam filter: hidden _hp field, checked first in the service. Filled → silent fake-201, stores nothing, logs server-side. Chose silent success over 400 so bots don't learn the honeypot exists (same 'reveal nothing' principle as 404-not-403).

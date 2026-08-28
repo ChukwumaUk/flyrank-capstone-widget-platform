@@ -208,6 +208,7 @@ id | widget_id | data | country
 
 ## ✅ Rate limiting (429 under flood)
 
+To test this rate limiting, we set the limit to 5 temporarily
 done
 --- request 1 ---
 201
