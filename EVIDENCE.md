@@ -238,11 +238,37 @@ Vary: Origin
 RateLimit-Policy: 5;w=60
 RateLimit: limit=5, remaining=0, reset=22
 
-## 🚧 Spam filtering
-_Not yet built._
+## ✅ Spam filtering
+
+% curl -i -X POST http://localhost:3000/submissions \
+  -H "Content-Type: application/json" \
+  -d '{"widget_id":"81d68621-9cac-413c-870b-658251d98027","data":{"email":"human@example.com"}}'
+HTTP/1.1 201 Created
+X-Powered-By: Expres
+
+{"id":"7","created_at":"2026-08-28T14:59:04.429Z"}% 
 
 ## 🚧 Geo-enrichment with graceful fallback (degrade, never fail)
 _Not yet built._
+
+curl -i -X POST http://localhost:3000/submissions \
+  -H "Content-Type: application/json" \
+  -d '{"widget_id":"81d68621-9cac-413c-870b-658251d98027","data":{"email":"bot@example.com"},"_hp":"http://spam.com"}'
+HTTP/1.1 201 Created
+X-Powered-By: Express
+Vary: Origin
+
+{"id":null,"created_at":"2026-08-28T14:59:16.453Z"}%
+
+docker compose exec db psql -U postgres -d widgets -c "select count(*), max(data->>'email') from submissions where data->>'email' in ('human@example.com','bot@example.com');"
+ count |        max        
+-------+-------------------
+     1 | human@example.com
+(1 row)
+
+Connected to Postgres
+Server running on http://localhost:3000
+[spam] honeypot triggered for widget 81d68621-9cac-413c-870b-658251d98027
 
 ## 🚧 Safe side effects (non-critical failure doesn't break the main path)
 _Not yet built._

@@ -1,4 +1,5 @@
 import { findWidgetForSubmission, insertSubmission } from "./submissions.repository";
+import { enrichIp } from "./geo";
 
 interface CreateSubmissionInput {
   widget_id: string;
@@ -20,13 +21,16 @@ export async function createSubmission(input: CreateSubmissionInput) {
     return { ok: false as const, reason: "widget_not_found" as const };
   }
 
+  // Enrich with geo — this NEVER throws, worst case returns null geo.
+  const geo = await enrichIp(input.ip_address);
+
   // Store the submission. Geo enrichment comes later — nulls for now.
   const submission = await insertSubmission({
     widget_id: input.widget_id,
     data: input.data,
     ip_address: input.ip_address,
-    country: null,
-    city: null,
+    country: geo.country,    // real value, or null if enrichment degraded
+    city: geo.city,
   });
 
   return { ok: true as const, spam: false as const, submission };
