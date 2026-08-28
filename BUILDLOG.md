@@ -67,3 +67,10 @@ Wired CORS on /submissions via the cors library; verified preflight (OPTIONS →
 
 ## Honey-pot Spam Filtering
 Honeypot spam filter: hidden _hp field, checked first in the service. Filled → silent fake-201, stores nothing, logs server-side. Chose silent success over 400 so bots don't learn the honeypot exists (same 'reveal nothing' principle as 404-not-403).
+
+## Geo-enrichment
+Geo-enrichment via two independent providers (ipapi.co, ip-api.com) with 2s
+AbortController timeouts, wrapped in enrichIp() which never throws — falls back
+primary → secondary → null. Proved by breaking both providers: submission still
+returned 201 and stored with null geo. Noticed a 429 ideally warrants backoff
+rather than immediate fallthrough — left simple per "don't gold-plate."

@@ -238,40 +238,75 @@ Vary: Origin
 RateLimit-Policy: 5;w=60
 RateLimit: limit=5, remaining=0, reset=22
 
-## ✅ Spam filtering
+## ✅ Spam filtering (honeypot)
+A submission with the honeypot field (`_hp`) filled is silently dropped: it returns
+a 201 identical to a real one (revealing nothing to the bot), but stores nothing and
+logs server-side. A normal submission stores; the honeypot one does not.
 
-% curl -i -X POST http://localhost:3000/submissions \
-  -H "Content-Type: application/json" \
-  -d '{"widget_id":"81d68621-9cac-413c-870b-658251d98027","data":{"email":"human@example.com"}}'
+Normal submission → 201, stores:
+$ curl -i -X POST http://localhost:3000/submissions
+-H "Content-Type: application/json"
+-d '{"widget_id":"81d68621-...","data":{"email":"human@example.com"}}'
+
 HTTP/1.1 201 Created
-X-Powered-By: Expres
+{"id":"7","created_at":"2026-08-28T14:59:04.429Z"}
 
-{"id":"7","created_at":"2026-08-28T14:59:04.429Z"}% 
 
-## 🚧 Geo-enrichment with graceful fallback (degrade, never fail)
-_Not yet built._
+Bot submission (honeypot filled) → 201, looks identical, but id is null:
 
-curl -i -X POST http://localhost:3000/submissions \
-  -H "Content-Type: application/json" \
-  -d '{"widget_id":"81d68621-9cac-413c-870b-658251d98027","data":{"email":"bot@example.com"},"_hp":"http://spam.com"}'
+$ curl -i -X POST http://localhost:3000/submissions
+-H "Content-Type: application/json"
+-d '{"widget_id":"81d68621-...","data":{"email":"bot@example.com"},"_hp":"http://spam.com"}'
+
 HTTP/1.1 201 Created
-X-Powered-By: Express
-Vary: Origin
+{"id":null,"created_at":"2026-08-28T14:59:16.453Z"}
 
-{"id":null,"created_at":"2026-08-28T14:59:16.453Z"}%
 
-docker compose exec db psql -U postgres -d widgets -c "select count(*), max(data->>'email') from submissions where data->>'email' in ('human@example.com','bot@example.com');"
- count |        max        
+Only the human was stored — the bot left no row — and the server logged the catch:
+
+$ docker compose exec db psql -U postgres -d widgets -c
+"select count(*), max(data->>'email') from submissions
+where data->>'email' in ('human@example.com','bot@example.com');"
+
+count | max
 -------+-------------------
-     1 | human@example.com
-(1 row)
+1 | human@example.com
 
-Connected to Postgres
-Server running on http://localhost:3000
+server log:
+
 [spam] honeypot triggered for widget 81d68621-9cac-413c-870b-658251d98027
 
+
+## ✅ Geo-enrichment with graceful fallback (degrade, never fail)
+Enrichment tries two independent providers, each with a 2s timeout, wrapped in
+enrichIp() which never throws. On total failure it returns null geo — the submission
+still succeeds. Proven by breaking BOTH providers:
+
+$ curl -s -X POST http://localhost:3000/submissions
+-H "Content-Type: application/json"
+-d '{"widget_id":"81d68621-...","data":{"email":"geo-degraded@example.com"}}'
+{"id":"13","created_at":"2026-08-28T16:06:56.124Z"} # still 201
+
+server logs — both providers failed, two different failure modes:
+
+[geo] primary failed for 8.8.8.8: Primary geo returned 429; trying secondary
+[geo] secondary also failed for 8.8.8.8: fetch failed; storing without geo
+
+the row stored anyway, with null geo:
+
+select data->>'email', country, city ...
+email | country | city
+--------------------------+---------+------
+geo-degraded@example.com | |
+
+(Test scaffolding — forced IP 8.8.8.8 and broke both provider URLs — was reverted
+after capturing this.)
+
 ## 🚧 Safe side effects (non-critical failure doesn't break the main path)
-_Not yet built._
+_Building now._
+
+## ✅ Safe side effects (non-critical failure doesn't break the main path)
+Geo-enrichment via two independent providers with 2s timeouts, wrapped in enrichIp() which never throws — falls back primary→secondary→null. Proved by breaking both providers: submission still returned 201 and stored with null geo. Noticed a 429 ideally warrants backoff rather than immediate fallthrough — left simple per 'don't gold-plate'.
 
 ## 🚧 Dashboard (submissions + stats per widget)
 _Not yet built._
