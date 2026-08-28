@@ -4,6 +4,7 @@ import { authRouter } from "./auth/auth.routes";
 import { requireAuth } from "./middleware/requireAuth";
 import { submissionsRouter } from "./submissions/submissions.routes";
 import { submissionCors } from "./submissions/cors";
+import { submissionRateLimit } from "./submissions/rateLimit";
 
 export const app = express();
 
@@ -11,7 +12,14 @@ export const app = express();
 const submissionJson = express.json({ limit: "10kb" });
 
 app.use(express.json());
-app.use("/submissions", submissionCors, submissionJson, submissionsRouter);
+
+app.use(
+  "/submissions",
+  submissionCors,          // 1. CORS: is this origin allowed?
+  submissionRateLimit,     // 2. Rate limit: is this IP flooding?
+  submissionJson,          // 3. Parse + size-limit the body (<=10kb)
+  submissionsRouter        // 4. Validate structure, check widget, store
+);
 
 app.options("/submissions", submissionCors);          // handle preflight
 app.post("/submissions", submissionCors, (_req, res) => {

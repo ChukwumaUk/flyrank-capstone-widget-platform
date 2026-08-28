@@ -206,8 +206,36 @@ id | widget_id | data | country
 1 | 81d68621-9cac-413c-870b-658251d98027 | {"name": "Jane", "email": "visitor@example.com"} |
 (1 row)
 
-## 🚧 Rate limiting (429 under flood)
-_Not yet built._
+## ✅ Rate limiting (429 under flood)
+
+done
+--- request 1 ---
+201
+--- request 2 ---
+201
+--- request 3 ---
+201
+--- request 4 ---
+201
+--- request 5 ---
+201
+--- request 6 ---
+429
+--- request 7 ---
+429
+--- request 8 ---
+429
+
+ count 
+-------
+     6
+(1 row)
+
+HTTP/1.1 429 Too Many Requests
+X-Powered-By: Express
+Vary: Origin
+RateLimit-Policy: 5;w=60
+RateLimit: limit=5, remaining=0, reset=22
 
 ## 🚧 Spam filtering
 _Not yet built._
