@@ -3,6 +3,10 @@ import { createWidgetSchema } from "./widgets.schema";
 import { createWidget } from "./widgets.service";
 import { z } from "zod";
 import { findWidgetsByOwner, findWidgetByIdForOwner, updateWidgetForOwner, deleteWidgetForOwner } from "./widgets.repository";
+import {
+  findSubmissionsForOwnerWidget,
+  findStatsForOwnerWidget,
+} from "../submissions/submissions.repository";
 
 export const widgetsRouter = Router();
 
@@ -44,6 +48,25 @@ widgetsRouter.get("/:id", async (req, res) => {
   const widget = await findWidgetByIdForOwner(req.params.id, req.user!.id);
   if (!widget) return res.status(404).json({ error: "Widget not found" });
   res.json(widget);
+});
+
+// GET /api/widgets/:id/submissions — the owner's leads for one widget
+widgetsRouter.get("/:id/submissions", async (req, res) => {
+  // First confirm the widget is the caller's (404 if not theirs / doesn't exist).
+  const widget = await findWidgetByIdForOwner(req.params.id, req.user!.id);
+  if (!widget) return res.status(404).json({ error: "Widget not found" });
+
+  const submissions = await findSubmissionsForOwnerWidget(req.params.id, req.user!.id);
+  res.json(submissions);
+});
+
+// GET /api/widgets/:id/stats — basic analytics
+widgetsRouter.get("/:id/stats", async (req, res) => {
+  const widget = await findWidgetByIdForOwner(req.params.id, req.user!.id);
+  if (!widget) return res.status(404).json({ error: "Widget not found" });
+
+  const stats = await findStatsForOwnerWidget(req.params.id, req.user!.id);
+  res.json(stats);
 });
 
 // PATCH /api/widgets/:id - Update specific widget if owned

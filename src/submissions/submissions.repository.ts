@@ -30,3 +30,41 @@ export async function insertSubmission(input: InsertSubmissionInput) {
   );
   return rows[0];
 }
+
+// List submissions for a widget — but ONLY if that widget belongs to the owner.
+// Tenant isolation via a join: the widget must match both id AND owner_id.
+export async function findSubmissionsForOwnerWidget(widgetId: string, ownerId: string) {
+  const { rows } = await pool.query(
+    `select s.id, s.data, s.country, s.city, s.created_at
+       from submissions s
+       join widgets w on w.id = s.widget_id
+      where s.widget_id = $1
+        and w.owner_id = $2
+      order by s.created_at desc`,
+    [widgetId, ownerId]
+  );
+  return rows;
+}
+
+// Basic stats for a widget the owner owns: total + counts by country.
+export async function findStatsForOwnerWidget(widgetId: string, ownerId: string) {
+  const totalResult = await pool.query(
+    `select count(*)::int as total
+       from submissions s
+       join widgets w on w.id = s.widget_id
+      where s.widget_id = $1 and w.owner_id = $2`,
+    [widgetId, ownerId]
+  );
+
+  const byCountry = await pool.query(
+    `select coalesce(s.country, 'Unknown') as country, count(*)::int as count
+       from submissions s
+       join widgets w on w.id = s.widget_id
+      where s.widget_id = $1 and w.owner_id = $2
+      group by s.country
+      order by count desc`,
+    [widgetId, ownerId]
+  );
+
+  return { total: totalResult.rows[0].total, by_country: byCountry.rows };
+}
