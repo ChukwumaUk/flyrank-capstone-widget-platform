@@ -112,11 +112,27 @@ Content-Type: application/json; charset=utf-8
 "message":"Invalid option: expected one of "signup"|"cta"|"popover""}]}
 
 
-## 🚧 Public config delivery (cached, projection only)
-_Not yet built — Phase 3._
+## ✅ Public config delivery (cached, projection only)
+
+no owner_id/allowed_origins in the public payload — projected via toPublicConfig
+
+curl -i http://localhost:3000/widgets/81d68621-9cac-413c-870b-658251d98027/config
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Cache-Control: public, max-age=60
+Content-Type: application/json; charset=utf-8
+Content-Length: 120
+ETag: W/"78-eBJAGiLG46IwB4YQpl3NbV2EafQ"
+Date: Sun, 30 Aug 2026 11:40:39 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+{"id":"81d68621-9cac-413c-870b-658251d98027","type":"signup","title":"Owner1 Newsletter","description":null,"config":{}}% 
 
 ## 🚧 Embeddable widget script (one-line snippet)
-_Not yet built — Phase 3._
+
 
 ## ✅ Hardened submission path — CORS + preflight
 A cross-origin JSON POST triggers a preflight. The server answers `OPTIONS` with
@@ -302,8 +318,6 @@ geo-degraded@example.com | |
 (Test scaffolding — forced IP 8.8.8.8 and broke both provider URLs — was reverted
 after capturing this.)
 
-## 🚧 Safe side effects (non-critical failure doesn't break the main path)
-_Building now._
 
 ## ✅ Safe side effects (non-critical failure doesn't break the main path)
 Geo-enrichment via two independent providers with 2s timeouts, wrapped in enrichIp() which never throws — falls back primary→secondary→null. Proved by breaking both providers: submission still returned 201 and stored with null geo. Noticed a 429 ideally warrants backoff rather than immediate fallthrough — left simple per 'don't gold-plate'.

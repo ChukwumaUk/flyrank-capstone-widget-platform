@@ -7,6 +7,7 @@ import { submissionCors } from "./submissions/cors";
 import { submissionRateLimit } from "./submissions/rateLimit";
 import { configRouter } from "./widgets/config.routes";
 import cors from "cors";
+import path from "path";
 
 export const app = express();
 
@@ -40,3 +41,6 @@ app.use("/api/widgets", requireAuth, widgetsRouter);  // protected: auth runs fi
 
 // Public config: readable cross-origin (the widget script fetches it from any site).
 app.use("/widgets", cors(), configRouter);
+
+// Serve the widget script (and later, static assets) from /public.
+app.use(express.static(path.join(__dirname, "..", "public")));
