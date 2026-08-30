@@ -1,5 +1,17 @@
-run:
-
-seed:
-
-test:
+run: docker compose up --build
+seed: npm run seed
+test: npm test
+base_url: http://localhost:3000
+endpoints:
+  - "POST /api/widgets (auth)"
+  - "GET /api/widgets (auth)"
+  - "GET /api/widgets/:id (auth)"
+  - "PATCH /api/widgets/:id (auth)"
+  - "DELETE /api/widgets/:id (auth)"
+  - "GET /api/widgets/:id/submissions (auth)"
+  - "GET /api/widgets/:id/stats (auth)"
+  - "GET /widgets/:id/config (public, cached)"
+  - "GET /widget.js (public)"
+  - "POST /submissions (public, CORS, hardened)"
+  - "POST /auth/signup"
+  - "POST /auth/login"

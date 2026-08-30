@@ -131,7 +131,16 @@ Keep-Alive: timeout=5
 
 {"id":"81d68621-9cac-413c-870b-658251d98027","type":"signup","title":"Owner1 Newsletter","description":null,"config":{}}% 
 
-## 🚧 Embeddable widget script (one-line snippet)
+## ✅ Embeddable widget script (one-line snippet)
+A single `<script src="/widget.js?id=...">` line renders a working form on a page
+served from a different origin (localhost:5500), which submits cross-origin.
+
+$ curl -i http://localhost:3000/widget.js
+HTTP/1.1 200 OK
+Content-Type: text/javascript; charset=utf-8
+
+(the widget renders on customer-site/index.html and submits; browser Network tab
+shows the OPTIONS preflight 204 then POST 201)
 
 
 ## ✅ Hardened submission path — CORS + preflight
@@ -318,12 +327,38 @@ geo-degraded@example.com | |
 (Test scaffolding — forced IP 8.8.8.8 and broke both provider URLs — was reverted
 after capturing this.)
 
-
 ## ✅ Safe side effects (non-critical failure doesn't break the main path)
-Geo-enrichment via two independent providers with 2s timeouts, wrapped in enrichIp() which never throws — falls back primary→secondary→null. Proved by breaking both providers: submission still returned 201 and stored with null geo. Noticed a 429 ideally warrants backoff rather than immediate fallthrough — left simple per 'don't gold-plate'.
+After storing a submission, the owner notification fires as a safe side effect. When
+it throws (FAIL flag), the submission still returns 201 and the row is stored — the
+failure is logged and swallowed, never propagated.
+
+$ curl -i -X POST http://localhost:3000/submissions
+-H "Content-Type: application/json"
+-d '{"widget_id":"81d68621-...","data":{"email":"notify-fail@example.com"}}'
+HTTP/1.1 201 Created
+{"id":"16","created_at":"2026-08-28T16:33:00.636Z"}
+
+server log:
+[notify] failed for submission 16: Email service unavailable
+
+the lead stored anyway:
+ email                   | country
+-------------------------+---------
+ notify-fail@example.com |
+
+
 
 ## ✅ Dashboard (submissions + stats per widget)
-_Not yet built._
+An owner sees submissions and aggregated stats for their widget; another tenant gets 404.
+
+$ curl -i http://localhost:3000/api/widgets/81d68621-.../stats -H "Authorization: Bearer $TOKEN1"
+HTTP/1.1 200 OK
+{"total":17,"by_country":[{"country":"Unknown","count":16},{"country":"United States","count":1}]}
+
+Owner 2 cannot see owner 1's widget's submissions:
+$ curl -i http://localhost:3000/api/widgets/81d68621-.../submissions -H "Authorization: Bearer $TOKEN2"
+HTTP/1.1 404 Not Found
+{"error":"Widget not found"}
 
 ## ✅ Tests
 
@@ -345,6 +380,18 @@ _Not yet built._
    Start at  15:10:53
    Duration  1.56s (transform 243ms, setup 48ms, import 902ms, tests 207ms, environment 0ms)
 
-## 🚧 One-command run (docker compose up)
-_Not yet built._
+## ✅ One-command run (docker compose up)
+`docker compose up --build` boots the whole stack: Postgres goes healthy, then the
+app connects, runs migrations automatically, and serves.
+
+db-1  | database system is ready to accept connections
+Container ...-db-1 Healthy
+app-1 | Connected to Postgres
+app-1 | Running migration: 001_init.sql
+app-1 | Migrations applied
+app-1 | Server running on http://localhost:3000
+
+$ curl -i http://localhost:3000/health
+HTTP/1.1 200 OK
+{"status":"ok"}
 

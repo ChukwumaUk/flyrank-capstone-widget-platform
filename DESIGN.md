@@ -144,10 +144,12 @@ email failed, because those are non-critical side effects.
 7. The backend runs the defense chain, stores the row → the owner sees it via
    `GET /api/widgets/abc123/submissions`.
 
-## 7. Decisions still open (revisit in Phase 2)
+## 7. Decisions made during the build
 
-- **Idempotency key** on submissions — to make a retried submit store once, not
-  twice. Considered; decide in Phase 2 whether the widget path needs it.
-- **IP address privacy** — store raw `ip_address`, store a hash, or derive geo and
-  discard the IP. IP is personal data; the choice will be noted in the README's
-  limitations.
+- **Idempotency key** on submissions — considered, but not added. The widget
+  submission path is naturally low-stakes on retries (a duplicate lead is a minor,
+  recoverable issue, unlike a duplicate payment), so per the "don't gold-plate"
+  guidance it was left out. Noted as a possible enhancement.
+- **IP address privacy** — the raw `ip_address` is stored (nullable). It's needed
+  for rate limiting and geo-enrichment. A production system might hash it or drop it
+  after enrichment; this tradeoff is noted in the README's limitations.

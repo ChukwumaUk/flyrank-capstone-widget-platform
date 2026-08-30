@@ -55,11 +55,8 @@ scaffolding, docs), I reviewed it, understood it, and adjusted it to my project.
   rows are never returned. 404 (not 403) so existence isn't leaked.
 
 ## AI usage summary
-[YOUR SUMMARY — e.g. "Claude guided the build in a teacher-student format,
-explaining each concept and line. I wrote/reviewed all code, debugged the issues
-above myself with guidance, and can defend every decision. AI was most useful for
-TypeScript tooling config and explaining new concepts (declaration merging, CORS);
-least needed for the CRUD/SQL logic, which reused patterns I already knew."]
+
+Claude guided this build in a teacher-student format — explaining each concept and every line before I wrote it, so I understand and can defend the whole system. I wrote and ran all the code, and debugged every problem myself with guidance (the middleware-mount 500, the invalid-UUID test data, the test-pollution 429, the Docker Node-22/tsconfig/npm-timeout issues). AI was most valuable for explaining new concepts (CORS/preflight, declaration merging, multi-stage Docker builds) and for boilerplate config I reviewed and adapted; least needed for the CRUD/SQL and layered-architecture patterns, which I already knew from earlier assignments.
 
 ## CORS
 
@@ -80,3 +77,22 @@ Owner notification as a safe side effect: store first, notify second, wrapped in
 ## Tests
 
 Test suite with vitest + supertest, mocking geo, repository, and Supabase so tests are deterministic and need no live DB/network. Hit test-pollution: the rate-limit test leaked counter state into the geo test (429 instead of 201); fixed by resetting the limiter's store in beforeEach alongside vi.clearAllMocks(). Noted a fully resettable limiter is the cleaner long-term design.
+
+## Phase 3 — Delivery, dashboard, and packaging
+- Public cached config endpoint with a `toPublicConfig` projection (whitelists only
+  safe fields; owner_id/allowed_origins never exposed). Cache-Control: max-age=60.
+- Embeddable widget.js: reads its own ?id via document.currentScript, fetches config,
+  renders the form, plants the honeypot, submits cross-origin. Wrapped in an IIFE to
+  avoid polluting the host page.
+- Customer-site test page on a second origin (localhost:5500) — watched the widget
+  render and submit, with the OPTIONS preflight + POST visible in the Network tab.
+  Bug: widget rendered but never showed — was building the DOM but not appending it
+  to document.body. One-line fix.
+- Dashboard endpoints (submissions + stats), tenant-scoped via a JOIN on owner_id.
+- Deterministic test suite (see Tests entry).
+- One-command docker compose: multi-stage Dockerfile (build stage compiles TS,
+  run stage ships lean JS), auto-migrate on startup, healthcheck gate. Debugged:
+  tsconfig moduleResolution:node was removed in newer TS; Supabase needs Node 22+
+  (bumped base image); npm install network timeout (switched to npm ci with a
+  longer fetch-timeout); db port needed publishing for the local seed script.
+- Idempotent seed script that creates a demo widget and prints its embed snippet.
