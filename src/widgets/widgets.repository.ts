@@ -61,3 +61,12 @@ export async function deleteWidgetForOwner(id: string, ownerId: string): Promise
   );
   return (result.rowCount ?? 0) > 0;
 }
+
+// Public lookup — no owner filter. Anyone may read a widget's public config.
+export async function findWidgetById(id: string): Promise<Widget | null> {
+  const { rows } = await pool.query<Widget>(
+    `select * from widgets where id = $1`,
+    [id]
+  );
+  return rows[0] ?? null;
+}

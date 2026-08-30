@@ -74,3 +74,5 @@ AbortController timeouts, wrapped in enrichIp() which never throws — falls bac
 primary → secondary → null. Proved by breaking both providers: submission still
 returned 201 and stored with null geo. Noticed a 429 ideally warrants backoff
 rather than immediate fallthrough — left simple per "don't gold-plate."
+
+Owner notification as a safe side effect: store first, notify second, wrapped in try/catch that logs and swallows. Submission returns 201 even when notify throws (proved with FAIL flag). Await + try/catch chosen over fire-and-forget; noted a job queue is the production path for slow side effects — out of scope here."

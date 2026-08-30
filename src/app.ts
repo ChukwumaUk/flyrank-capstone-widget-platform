@@ -5,6 +5,8 @@ import { requireAuth } from "./middleware/requireAuth";
 import { submissionsRouter } from "./submissions/submissions.routes";
 import { submissionCors } from "./submissions/cors";
 import { submissionRateLimit } from "./submissions/rateLimit";
+import { configRouter } from "./widgets/config.routes";
+import cors from "cors";
 
 export const app = express();
 
@@ -35,3 +37,6 @@ app.get("/health", (_req, res) => {
 app.use("/auth", authRouter);  // public: signup / login
 
 app.use("/api/widgets", requireAuth, widgetsRouter);  // protected: auth runs first
+
+// Public config: readable cross-origin (the widget script fetches it from any site).
+app.use("/widgets", cors(), configRouter);
