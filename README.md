@@ -57,6 +57,7 @@ layer, not the business logic.
 
 ## Setup & run
 
+
 1. Create a free project at [supabase.com](https://supabase.com). From
    **Project Settings → API**, copy your **Project URL** and **anon key**. In
    **Authentication → Sign In / Providers → Email**, turn **Confirm email OFF**
@@ -77,6 +78,8 @@ layer, not the business logic.
 ```
 
    The API is now at http://localhost:3000.
+
+   Note: docker compose up --build downloads dependencies; on a slow connection the npm install step may need a retry (ECONNRESET). The build is deterministic and completes once the download succeeds.
 
 4. Seed a demo widget (idempotent — safe to run twice). It prints an embed snippet
    you can paste into any page:
