@@ -90,5 +90,7 @@
         message.style.color = "red";
       }
     });
+
+    document.body.appendChild(container);
   }
 })();
