@@ -322,7 +322,7 @@ after capturing this.)
 ## ✅ Safe side effects (non-critical failure doesn't break the main path)
 Geo-enrichment via two independent providers with 2s timeouts, wrapped in enrichIp() which never throws — falls back primary→secondary→null. Proved by breaking both providers: submission still returned 201 and stored with null geo. Noticed a 429 ideally warrants backoff rather than immediate fallthrough — left simple per 'don't gold-plate'.
 
-## 🚧 Dashboard (submissions + stats per widget)
+## ✅ Dashboard (submissions + stats per widget)
 _Not yet built._
 
 ## 🚧 Tests

@@ -1,4 +1,6 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { MemoryStore } from "express-rate-limit";
+
+export const submissionRateLimitStore = new MemoryStore();
 
 export const submissionRateLimit = rateLimit({
   windowMs: 60 * 1000,          // 1 minute window
@@ -7,4 +9,6 @@ export const submissionRateLimit = rateLimit({
   legacyHeaders: false,         // don't send the old X-RateLimit-* headers
   message: { error: "Too many submissions, please try again later." },
   // keyGenerator defaults to the client IP — exactly what we want (per-IP).
+  store: submissionRateLimitStore,
+
 });
