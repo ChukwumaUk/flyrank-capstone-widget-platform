@@ -76,3 +76,7 @@ returned 201 and stored with null geo. Noticed a 429 ideally warrants backoff
 rather than immediate fallthrough — left simple per "don't gold-plate."
 
 Owner notification as a safe side effect: store first, notify second, wrapped in try/catch that logs and swallows. Submission returns 201 even when notify throws (proved with FAIL flag). Await + try/catch chosen over fire-and-forget; noted a job queue is the production path for slow side effects — out of scope here."
+
+## Tests
+
+Test suite with vitest + supertest, mocking geo, repository, and Supabase so tests are deterministic and need no live DB/network. Hit test-pollution: the rate-limit test leaked counter state into the geo test (429 instead of 201); fixed by resetting the limiter's store in beforeEach alongside vi.clearAllMocks(). Noted a fully resettable limiter is the cleaner long-term design.

@@ -325,8 +325,25 @@ Geo-enrichment via two independent providers with 2s timeouts, wrapped in enrich
 ## ✅ Dashboard (submissions + stats per widget)
 _Not yet built._
 
-## 🚧 Tests
-_Not yet built._
+## ✅ Tests
+
+✓ src/submissions/submissions.test.ts (7 tests) 207ms
+   ✓ POST /submissions — validation (4)
+     ✓ rejects a malformed widget_id with 400 74ms
+     ✓ rejects a missing data field with 400 6ms
+     ✓ stores a valid submission and returns 201 7ms
+     ✓ returns 404 for a submission to a non-existent widget 4ms
+   ✓ POST /submissions — spam honeypot (1)
+     ✓ silently drops a submission with the honeypot filled (stores nothing) 6ms
+   ✓ POST /submissions — rate limiting (1)
+     ✓ returns 429 after the limit is exceeded 102ms
+   ✓ POST /submissions — geo enrichment degrades (1)
+     ✓ still stores the submission (201) when enrichment returns null geo 4ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  15:10:53
+   Duration  1.56s (transform 243ms, setup 48ms, import 902ms, tests 207ms, environment 0ms)
 
 ## 🚧 One-command run (docker compose up)
 _Not yet built._
