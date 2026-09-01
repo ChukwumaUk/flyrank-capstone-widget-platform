@@ -2,12 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Totally Unrelated Customer Website</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #fdf6ec 0%, #f7e8d3 100%);
+      color: #4a3b2a;
+      margin: 0;
+      padding: 48px 24px;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    h1 {
+      color: #8b5e34;
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+    p {
+      color: #6b5844;
+      font-size: 1.05rem;
+      max-width: 520px;
+      line-height: 1.5;
+    }
+  </style>
 </head>
 <body>
-  <h1>Welcome to Jane's Bakery</h1>
+  <h1>🥐 Welcome to Jane's Bakery</h1>
   <p>This is a customer's website. It has nothing to do with the widget API.</p>
-  <p>Sign up for our newsletter below:</p>
+  <p><b>Sign up for our newsletter below:</b></p>
 
   <!-- THE ONE LINE. This is the entire product integration. -->
   <script src="http://localhost:3000/widget.js?id=9c250c96-1f97-428c-92e8-bc86821d5cf8"></script>
